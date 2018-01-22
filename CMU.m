@@ -1,6 +1,6 @@
 function SNR = CMU(R,w,tslots,K,N,sigma)
 %CMU
-epsilon = 0.001; lambda = 1;
+epsilon = 0.01; lambda = 1;
 Gk1 = cell(K,1); Gk2 = cell(K,1);
 for t = 1:tslots
     t
@@ -23,10 +23,14 @@ for t = 1:tslots
             Gk2sum = Gk2sum + log(real(-trace(w(:,Gk2{k}(n))*w(:,Gk2{k}(n))'*Rk_est)...
                 +sigma(k,Gk2{k}(n))));
         end
-        obj = Gk1sum + Gk2sum + log_det(0.5*(Rk_est+Rk_est'));
+        %obj = Gk1sum + Gk2sum + log_det(0.5*(Rk_est+Rk_est'));
+        obj = Gk1sum + Gk2sum + log_det(Rk_est);
         maximize obj;
         cvx_end;
         Rcap(:,:,k) = Rk_est;
+        if Rk_est ~= Rk_est
+            return;
+        end
     end
     wsum = 0;
     for k = 1:K
