@@ -1,6 +1,6 @@
-function SNR = CMU2(R,w,tslots,K,N,sigma)
+function [SNR, w, Rcap] = CMU2(R,w,tslots,K,N,sigma)
 %CMU
-epsilon = 0.01; lambda = 1;
+epsilon = 0.0001; lambda = 1;
 Gk1 = zeros(K,tslots); Gk2 = zeros(K,tslots);
 for t = 1:tslots
     t
@@ -11,14 +11,14 @@ for t = 1:tslots
         else
             Gk2(k,t) = 1;
         end
-        cvx_begin
+        cvx_begin quiet
         variable Rk_est(N,N) complex; %optimization variable
         expression obj; %objective function
         Gk1sum = 0; Gk2sum = 0;
         for n = 1:t
-            Gk1sum = Gk1sum + Gk1(k,n)*log(real(trace(w(:,t)*w(:,t)'*Rk_est)...
+            Gk1sum = Gk1sum + Gk1(k,n)*log(real(trace(w(:,n)*w(:,n)'*Rk_est)...
                 -sigma(k,n)));
-            Gk2sum = Gk2sum + Gk2(k,n)*log(real(-trace(w(:,t)*w(:,t)'*Rk_est)...
+            Gk2sum = Gk2sum + Gk2(k,n)*log(real(-trace(w(:,n)*w(:,n)'*Rk_est)...
                 +sigma(k,n))); 
         end
         %obj = Gk1sum + Gk2sum + log_det(0.5*(Rk_est+Rk_est'));
@@ -39,7 +39,7 @@ for t = 1:tslots
     w(:,t+1) = w(:,t+1)/norm(w(:,t+1));
     for k = 1:K
         sigma(k,t+1) = w(:,t+1)'*Rcap(:,:,k)*w(:,t+1);
-        cmuSNR(k) = w(:,t)'*Rcap(:,:,k)*w(:,t);
+        cmuSNR(k) = w(:,t)'*R(:,:,k)*w(:,t);
     end
     SNR(t) = min(cmuSNR); %minimum SNR among all users
     %w(:,t+1) = w(:,t+1) / SNR(t);

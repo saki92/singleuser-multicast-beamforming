@@ -11,7 +11,7 @@ for t = 1:tslots
         else
             Gk2{k} = [Gk2{k},t];
         end
-        cvx_begin
+        cvx_begin quiet
         variable Rk_est(N,N) complex; %optimization variable
         expression obj; %objective function
         Gk1sum = 0; Gk2sum = 0;
@@ -44,5 +44,6 @@ for t = 1:tslots
         cmuSNR(k) = w(:,t)'*Rcap(:,:,k)*w(:,t);
     end
     SNR(t) = min(cmuSNR); %minimum SNR among all users
+    %w(:,t+1) = w(:,t+1) / SNR(t);
 end
 end
